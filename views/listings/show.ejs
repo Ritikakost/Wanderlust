@@ -1,0 +1,121 @@
+<% layout("/layouts/boilerplate") %>
+<div class="row">
+    <div class="col-8 offset-2">
+        <h3 class="col-6 offset-2"><%= listing.title %></h3>
+    </div>
+    <div class="card col-6 offset-3 show-card listing-card" style="width: 18rem;">
+        <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="Listing image">
+        <div class="card-body">
+            <% if (listing.owner && listing.owner.username) { %>
+                <p class="card-text">Owned by: <i><%= listing.owner.username %></i></p>
+            <% } else { %>
+                <p class="card-text">Owner information not available</p>
+            <% } %>
+            
+            <p class="card-text"><%= listing.description %></p>
+            <p class="card-text">&#8377;<%= listing.price.toLocaleString("en-IN") %></p>
+            <p class="card-text"><%= listing.location %></p>
+            <p class="card-text"><%= listing.country %></p>
+           
+        </div>
+    </div>
+    <br>
+</div>
+<% if (currUser && listing.owner._id.equals(currUser._id)) { %>
+<div class="btns">
+    <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark offset-3 edit-btn">Edit</a>
+    <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE" class="d-inline">
+        <button class="btn btn-dark offset-5">Delete</button>
+    </form>
+</div>
+<% } %>
+
+<div class="col-8 offset-2 mb-3">
+    <hr>
+    <% if (currUser) { %>
+    <h4><b>Leave a Review</b></h4>
+    <form method="post" action="/listings/<%= listing._id %>/reviews" novalidate class="needs-validation">
+        <div class="mb-3 mt-3">
+            <label for="rating" class="form-label">Rating</label>
+            <fieldset class="starability-slot">
+                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                <label for="first-rate1" title="Terrible">1 star</label>
+                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                <label for="first-rate2" title="Not good">2 stars</label>
+                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                <label for="first-rate3" title="Average">3 stars</label>
+                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                <label for="first-rate4" title="Very good">4 stars</label>
+                <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                <label for="first-rate5" title="Amazing">5 stars</label>
+            </fieldset>
+        </div>
+        <div class="mb-3 mt-3">
+            <label for="comment" class="form-label">Comments</label>
+            <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
+            <div class="invalid-feedback">Please add some comments for review</div>
+        </div>
+        <button class="btn btn-outline-dark">Submit</button>
+    </form>
+    <hr>
+    <% } %>
+    
+    <p><b>All Reviews</b></p>
+    <div class="row"></div>
+    <% for (review of listing.reviews) { %>
+        <div class="card col-5 ms-3 mb-3">
+            <div class="card-body">
+                <% if (review.author && review.author.username) { %>
+                    <h5 class="card-title mt-3" style="font-size:15px; margin-left: 10px;"><b>@<%= review.author.username %></b></h5>
+                <% } else { %>
+                    <h5 class="card-title">Anonymous User</h5>
+                <% } %>
+                <p class="starability-result card-text" data-rating="<%= review.rating %>" style="font-size:10px; margin-left:10px;"></p>
+                <p class="card-text" style="margin-left: 10px;"><%= review.comment %></p>
+                <form class="mb-3" method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                    <button class="btn btn-sm btn-dark" style="margin-left: 10px;">Delete</button>
+                </form>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Leaflet Map Container -->
+<div id="map" style="height: 400px; width: 100%;"></div>
+
+<!-- Leaflet CDN link -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Leaflet Initialization Script -->
+<script>
+    // Initialize Leaflet map with a default view
+    var map = L.map('map').setView([0, 0], 2); // Default to world view with zoom level 2
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Geocode the location and country to show approximate center of the region
+    var geocodeUrl = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent('<%= listing.location %>, <%= listing.country %>');
+    
+    fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 13); // Set map view to the found coordinates with zoom level 13
+
+                // Add a marker for the approximate location
+                var marker = L.marker([lat, lon]).addTo(map);
+                marker.bindPopup('<b><%= listing.title %></b><br><%= listing.location %>, <%= listing.country %>').openPopup();
+            } else {
+                console.error('Location not found.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching geolocation:', error);
+        });
+</script>
