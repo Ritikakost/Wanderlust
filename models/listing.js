@@ -5,7 +5,7 @@ const User = require("./user");
 
 const validCategories = [
     "Trending", "Room", "Iconic Cities", "Mountains", 
-    "Castles", "Amazing Pools", "Camping", "Farms", 
+    "Castles", "Amazing Pools", "Camping", "Farms",  
     "Arctic", "Domes", "Boats"
 ];
 

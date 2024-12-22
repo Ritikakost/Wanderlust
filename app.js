@@ -111,6 +111,6 @@ app.listen(8080, () => {
 });
 
 //http://localhost:8080
-//K9iJvgJrW0nEx5ch
-//mongodb+srv://kosta08ritika:K9iJvgJrW0nEx5ch@cluster0.leuz9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-
+//hA3YmISODJP1WA0b
+//ATLASDB_URL=mongodb://localhost:27017/majorproject
+//mongodb+srv://kosta08ritika:hA3YmISODJP1WA0b@cluster0.7xpvl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
